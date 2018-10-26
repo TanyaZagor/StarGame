@@ -42,7 +42,7 @@ public class MenuScreen extends Base2DScreen {
             pos.set(touchDownPos);
         }
         batch.begin();
-        batch.draw(img,pos.x, pos.y, 0.05f, 0.05f);
+        batch.draw(img,pos.x, pos.y, 5f, 5f);
         batch.end();
 
 
@@ -57,7 +57,7 @@ public class MenuScreen extends Base2DScreen {
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
         touchDownPos = touch;
-        v.set(touchDownPos.cpy().sub(pos).scl(0.01f));
+        v.set(touchDownPos.cpy().sub(pos).scl(0.03f));
         return false;
     }
 }
