@@ -23,11 +23,13 @@ public class Button extends Sprite {
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
+        setScale(0.5f);
         return super.touchDown(touch, pointer);
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer) {
+        setScale(1f);
         return super.touchUp(touch, pointer);
     }
 }

@@ -87,6 +87,24 @@ public class MenuScreen extends Base2DScreen {
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
+        if (touch.cpy().sub(playButton.pos).len() < 0.1) {
+            playButton.touchDown(touch, pointer);
+        }
+        if (touch.cpy().sub(exitButton.pos).len() < 0.1) {
+            exitButton.touchDown(touch, pointer);
+        }
         return super.touchDown(touch, pointer);
+    }
+
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer) {
+        if (touch.cpy().sub(playButton.pos).len() < 0.1) {
+            playButton.touchUp(touch, pointer);
+        }
+        if (touch.cpy().sub(exitButton.pos).len() < 0.1) {
+            exitButton.touchUp(touch, pointer);
+            Gdx.app.exit();
+        }
+        return super.touchUp(touch, pointer);
     }
 }
