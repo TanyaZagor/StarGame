@@ -16,6 +16,8 @@ public class MainShip extends Sprite {
 
     private boolean pressedLeft;
     private boolean pressedRight;
+    private boolean canMoveLeft = true;
+    private boolean canMoveRight = true;
 
     private BulletPool bulletPool;
 
@@ -37,11 +39,41 @@ public class MainShip extends Sprite {
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
+        if (isMe(touch)) {
+            shoot();
+        } else if (touch.x < 0) {
+            pressedLeft = true;
+            if (canMoveLeft) {
+                moveLeft();
+                canMoveRight = true;
+            }
+        } else if (touch.x > 0) {
+            pressedRight = true;
+            if (canMoveRight) {
+                moveRight();
+                canMoveLeft = true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer) {
+        if (touch.x < 0) {
+            pressedLeft = false;
+            if (pressedRight) {
+                if (canMoveRight)moveRight();
+            } else {
+                stop();
+            }
+        } else if (touch.x > 0) {
+            pressedRight = false;
+            if (pressedLeft) {
+                if (canMoveLeft)moveLeft();
+            } else {
+                stop();
+            }
+        }
         return false;
     }
 
@@ -50,12 +82,18 @@ public class MainShip extends Sprite {
             case Input.Keys.A:
             case Input.Keys.LEFT:
                 pressedLeft = true;
-                moveLeft();
+                if (canMoveLeft) {
+                    moveLeft();
+                    canMoveRight = true;
+                }
                 break;
             case Input.Keys.D:
             case Input.Keys.RIGHT:
                 pressedRight = true;
-                moveRight();
+                if (canMoveRight) {
+                    moveRight();
+                    canMoveLeft = true;
+                }
                 break;
         }
         return false;
@@ -67,7 +105,10 @@ public class MainShip extends Sprite {
             case Input.Keys.LEFT:
                 pressedLeft = false;
                 if (pressedRight) {
-                    moveRight();
+                    if (canMoveRight) {
+                        moveRight();
+                        canMoveLeft = true;
+                    }
                 } else {
                     stop();
                 }
@@ -76,7 +117,11 @@ public class MainShip extends Sprite {
             case Input.Keys.RIGHT:
                 pressedRight = false;
                 if (pressedLeft) {
-                    moveLeft();
+                    if (canMoveLeft) {
+                        moveLeft();
+                        canMoveRight = true;
+
+                    }
                 } else {
                     stop();
                 }
@@ -103,6 +148,13 @@ public class MainShip extends Sprite {
     @Override
     public void update(float delta) {
         pos.mulAdd(v, delta);
+        if (getRight() > worldBounds.getRight()) {
+            canMoveRight = false;
+            stop();
+        } else if (getLeft() < worldBounds.getLeft()) {
+            canMoveLeft = false;
+            stop();
+        }
     }
 
     private void shoot() {
