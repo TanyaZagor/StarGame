@@ -31,6 +31,8 @@ public class MenuScreen extends Base2DScreen implements ActionListener {
     private Star[] stars;
     private ButtonExit buttonExit;
     private ButtonPlay buttonPlay;
+    private Music music;
+
     public MenuScreen(Game game) {
         super();
         this.game = game;
@@ -40,6 +42,9 @@ public class MenuScreen extends Base2DScreen implements ActionListener {
     @Override
     public void show() {
         super.show();
+        music = Gdx.audio.newMusic(Gdx.files.internal("Music1.mp3"));
+        music.setVolume(0.3f);
+        music.play();
         bgTexture = new Texture("bg.png");
         background = new Background(new TextureRegion(bgTexture));
         textureAtlas = new TextureAtlas("menuAtlas.tpack");
@@ -91,6 +96,7 @@ public class MenuScreen extends Base2DScreen implements ActionListener {
     public void dispose() {
         bgTexture.dispose();
         textureAtlas.dispose();
+        music.dispose();
         super.dispose();
     }
 

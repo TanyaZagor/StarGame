@@ -161,5 +161,6 @@ public class MainShip extends Sprite {
         Bullet bullet = bulletPool.obtain();
         bullet.set(this, atlas.findRegion("bulletMainShip"), pos,
                 new Vector2(0, 0.5f), 0.01f, worldBounds, 1);
+        bullet.sound.play(0.3f);
     }
 }

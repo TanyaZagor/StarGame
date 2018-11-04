@@ -30,6 +30,8 @@ public class GameScreen extends Base2DScreen {
     private MainShip mainShip;
     private BulletPool bulletPool;
 
+    private Music music;
+
     public GameScreen() {
         super();
     }
@@ -37,6 +39,9 @@ public class GameScreen extends Base2DScreen {
     @Override
     public void show() {
         super.show();
+        music = Gdx.audio.newMusic(Gdx.files.internal("Music2.mp3"));
+        music.setVolume(0.1f);
+        music.play();
         bgTexture = new Texture("bg.png");
         background = new Background(new TextureRegion(bgTexture));
         textureAtlas = new TextureAtlas("mainAtlas.tpack");
@@ -101,8 +106,9 @@ public class GameScreen extends Base2DScreen {
     public void dispose() {
         bgTexture.dispose();
         textureAtlas.dispose();
+        music.dispose();
+        bulletPool.obtain().sound.dispose();
         super.dispose();
-
     }
 
     @Override
