@@ -8,11 +8,16 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import ru.geekbrains.stargame.base.Base2DScreen;
 import ru.geekbrains.stargame.math.Rect;
 import ru.geekbrains.stargame.math.Rnd;
 import ru.geekbrains.stargame.pool.BulletPool;
+import ru.geekbrains.stargame.pool.EnemyPool;
 import ru.geekbrains.stargame.sprite.Background;
+import ru.geekbrains.stargame.sprite.EnemyShip;
 import ru.geekbrains.stargame.sprite.MainShip;
 import ru.geekbrains.stargame.sprite.Star;
 
@@ -29,13 +34,13 @@ public class GameScreen extends Base2DScreen {
 
     private MainShip mainShip;
     private BulletPool bulletPool;
+    private EnemyPool enemyPool;
 
     private Music music;
 
     public GameScreen() {
         super();
     }
-
     @Override
     public void show() {
         super.show();
@@ -46,11 +51,13 @@ public class GameScreen extends Base2DScreen {
         background = new Background(new TextureRegion(bgTexture));
         textureAtlas = new TextureAtlas("mainAtlas.tpack");
         stars = new Star[STAR_COUNT];
-        for (int i = 0; i < stars.length; i++) {
+        for (int i= 0; i < stars.length; i++) {
             stars[i] = new Star(textureAtlas);
         }
         bulletPool = new BulletPool();
         mainShip = new MainShip(textureAtlas, bulletPool);
+        enemyPool = new EnemyPool();
+        getEnemy();
 
     }
 
@@ -64,11 +71,12 @@ public class GameScreen extends Base2DScreen {
     }
 
     public void update(float delta) {
-        for (int i = 0; i < stars.length; i++) {
+        for (int i= 0; i < stars.length; i++) {
             stars[i].update(delta);
         }
         mainShip.update(delta);
         bulletPool.updateActiveObjects(delta);
+        enemyPool.updateActiveObjects(delta);
     }
 
     public void checkCollisions() {
@@ -77,6 +85,7 @@ public class GameScreen extends Base2DScreen {
 
     public void deleteAllDestroyed() {
         bulletPool.freeAllDestroyedActiveObjects();
+        enemyPool.freeAllDestroyedActiveObjects();
     }
 
     public void draw() {
@@ -84,11 +93,12 @@ public class GameScreen extends Base2DScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         background.draw(batch);
-        for (int i = 0; i < stars.length; i++) {
+        for (int i= 0; i < stars.length; i++) {
             stars[i].draw(batch);
         }
         mainShip.draw(batch);
         bulletPool.drawActiveObjects(batch);
+        enemyPool.drawActiveObjects(batch);
         batch.end();
     }
 
@@ -96,19 +106,20 @@ public class GameScreen extends Base2DScreen {
     @Override
     public void resize(Rect worldBounds) {
         background.resize(worldBounds);
-        for (int i = 0; i < stars.length; i++) {
+        for (int i= 0; i < stars.length; i++) {
             stars[i].resize(worldBounds);
         }
         mainShip.resize(worldBounds);
+        enemyPool.resize(worldBounds);
     }
 
     @Override
     public void dispose() {
+        super.dispose();
         bgTexture.dispose();
         textureAtlas.dispose();
         music.dispose();
         bulletPool.obtain().sound.dispose();
-        super.dispose();
     }
 
     @Override
@@ -133,5 +144,9 @@ public class GameScreen extends Base2DScreen {
     public boolean keyUp(int keycode) {
         mainShip.keyUp(keycode);
         return super.keyUp(keycode);
+    }
+    public void getEnemy() {
+        EnemyShip enemyShip = enemyPool.obtain();
+        enemyShip.set(textureAtlas.findRegion("enemy1"), new Vector2(Rnd.nextFloat(-0.5f, 0.5f), 0.5f), new Vector2(0, -0.2f), 0.05f);
     }
 }

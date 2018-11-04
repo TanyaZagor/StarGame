@@ -63,4 +63,14 @@ public abstract class SpritesPool<T extends Sprite> {
         System.out.println("active/free: " + activeObjects.size() + ":" + freeObjects.size());
     }
 
+    protected void resizeActiveObjects(Rect worldBounds) {
+        for (int i = 0; i < activeObjects.size(); i++) {
+            T sprite = activeObjects.get(i);
+            if (!sprite.isDestroyed()) {
+                sprite.resize(worldBounds);
+
+            }
+        }
+    }
+
 }
