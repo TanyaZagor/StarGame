@@ -11,8 +11,4 @@ public class Star2DGame extends Game {
     public void create() {
         setScreen(new MenuScreen(this));
     }
-
-    public void create(Base2DScreen screen) {
-        setScreen(screen);
-    }
 }

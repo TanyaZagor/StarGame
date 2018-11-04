@@ -1,6 +1,8 @@
 package ru.geekbrains.stargame.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -8,28 +10,30 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 import ru.geekbrains.stargame.Star2DGame;
+import ru.geekbrains.stargame.base.ActionListener;
 import ru.geekbrains.stargame.base.Base2DScreen;
 import ru.geekbrains.stargame.math.Rect;
 import ru.geekbrains.stargame.sprite.Background;
-import ru.geekbrains.stargame.sprite.Button;
+import ru.geekbrains.stargame.sprite.ButtonExit;
+import ru.geekbrains.stargame.sprite.ButtonPlay;
 import ru.geekbrains.stargame.sprite.Star;
 
-public class MenuScreen extends Base2DScreen {
+public class MenuScreen extends Base2DScreen implements ActionListener {
 
     private static final int STAR_COUNT = 256;
+
+    private Game game;
 
     private Texture bgTexture;
     private Background background;
 
     private TextureAtlas textureAtlas;
     private Star[] stars;
-    private Button playButton;
-    private Button exitButton;
-    private Star2DGame star2DGame;
-
-    public MenuScreen(Star2DGame star2DGame) {
+    private ButtonExit buttonExit;
+    private ButtonPlay buttonPlay;
+    public MenuScreen(Game game) {
         super();
-        this.star2DGame = star2DGame;
+        this.game = game;
     }
 
 
@@ -43,10 +47,8 @@ public class MenuScreen extends Base2DScreen {
         for (int i= 0; i < stars.length; i++) {
             stars[i] = new Star(textureAtlas);
         }
-        playButton = new Button(textureAtlas, "btPlay", 0.3f, 0.2f);
-        exitButton = new Button(textureAtlas, "btExit", 0.2f, -0.2f);
-
-
+        buttonExit = new ButtonExit(textureAtlas, this);
+        buttonPlay = new ButtonPlay(textureAtlas, this);
     }
 
     @Override
@@ -54,6 +56,12 @@ public class MenuScreen extends Base2DScreen {
         super.render(delta);
         update(delta);
         draw();
+    }
+
+    public void update(float delta) {
+        for (int i= 0; i < stars.length; i++) {
+            stars[i].update(delta);
+        }
     }
 
     public void draw() {
@@ -64,16 +72,9 @@ public class MenuScreen extends Base2DScreen {
         for (int i= 0; i < stars.length; i++) {
             stars[i].draw(batch);
         }
-        playButton.draw(batch);
-        exitButton.draw(batch);
+        buttonExit.draw(batch);
+        buttonPlay.draw(batch);
         batch.end();
-    }
-    public void update(float delta) {
-        for (int i= 0; i < stars.length; i++) {
-            stars[i].update(delta);
-        }
-        playButton.update(delta);
-        exitButton.update(delta);
     }
 
     @Override
@@ -82,6 +83,8 @@ public class MenuScreen extends Base2DScreen {
         for (int i= 0; i < stars.length; i++) {
             stars[i].resize(worldBounds);
         }
+        buttonExit.resize(worldBounds);
+        buttonPlay.resize(worldBounds);
     }
 
     @Override
@@ -93,25 +96,26 @@ public class MenuScreen extends Base2DScreen {
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
-        if (touch.cpy().sub(playButton.pos).len() < 0.1) {
-            playButton.touchDown(touch, pointer);
-        }
-        if (touch.cpy().sub(exitButton.pos).len() < 0.1) {
-            exitButton.touchDown(touch, pointer);
-        }
-        return super.touchDown(touch, pointer);
+        buttonExit.touchDown(touch, pointer);
+        buttonPlay.touchDown(touch, pointer);
+        return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer) {
-        if (touch.cpy().sub(playButton.pos).len() < 0.1) {
-            playButton.touchUp(touch, pointer);
-            star2DGame.create(new GameScreen());
-        }
-        if (touch.cpy().sub(exitButton.pos).len() < 0.1) {
-            exitButton.touchUp(touch, pointer);
+        buttonExit.touchUp(touch, pointer);
+        buttonPlay.touchUp(touch, pointer);
+        return false;
+    }
+
+    @Override
+    public void actionPerformed(Object src) {
+
+        if (src == buttonExit) {
             Gdx.app.exit();
+        } else if (src == buttonPlay) {
+            game.setScreen(new GameScreen());
         }
-        return super.touchUp(touch, pointer);
+
     }
 }

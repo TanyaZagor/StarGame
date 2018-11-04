@@ -5,6 +5,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
 import ru.geekbrains.stargame.Star2DGame;
 import ru.geekbrains.stargame.StarGame;
+import ru.geekbrains.stargame.screen.MenuScreen;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
