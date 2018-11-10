@@ -1,74 +1,88 @@
 package ru.geekbrains.stargame.sprite;
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 
-import ru.geekbrains.stargame.base.Sprite;
+import ru.geekbrains.stargame.base.Ship;
 import ru.geekbrains.stargame.math.Rect;
 import ru.geekbrains.stargame.pool.BulletPool;
 
-public class MainShip extends Sprite {
+public class MainShip extends Ship {
+
+    private static final int INVALID_POINTER = -1;
 
     private Vector2 v0 = new Vector2(0.5f, 0);
-    private Vector2 v = new Vector2();
 
     private boolean pressedLeft;
     private boolean pressedRight;
-    private boolean canMoveLeft = true;
-    private boolean canMoveRight = true;
 
-    private BulletPool bulletPool;
+    private int leftPointer = INVALID_POINTER;
+    private int rightPointer = INVALID_POINTER;
 
-    private TextureAtlas atlas;
-    private Rect worldBounds;
-
-    public MainShip(TextureAtlas atlas, BulletPool bulletPool) {
-        super(atlas.findRegion("main_ship"), 1, 2, 2);
+    public MainShip(TextureAtlas atlas, BulletPool bulletPool, Sound shootSound) {
+        super(atlas.findRegion("main_ship"), 1, 2, 2, shootSound);
         setHeightProportion(0.15f);
         this.bulletPool = bulletPool;
-        this.atlas = atlas;
+        this.bulletV.set(0, 0.5f);
+        this.bulletHeight = 0.01f;
+        this.bulletDamage = 1;
+        this.reloadInterval = 0.2f;
+        this.bulletRegion =  atlas.findRegion("bulletMainShip");
+    }
+
+    @Override
+    public void update(float delta) {
+        pos.mulAdd(v, delta);
+        reloadTimer += delta;
+        if (reloadTimer >= reloadInterval) {
+            shoot();
+            reloadTimer = 0f;
+        }
+        if (getRight() > worldBounds.getRight()) {
+            setRight(worldBounds.getRight());
+            stop();
+        }
+        if (getLeft() < worldBounds.getLeft()) {
+            setLeft(worldBounds.getLeft());
+            stop();
+        }
     }
 
     @Override
     public void resize(Rect worldBounds) {
-        this.worldBounds = worldBounds;
+        super.resize(worldBounds);
         setBottom(worldBounds.getBottom() + 0.05f);
     }
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
-        if (isMe(touch)) {
-            shoot();
-        } else if (touch.x < 0) {
-            pressedLeft = true;
-            if (canMoveLeft) {
-                moveLeft();
-                canMoveRight = true;
-            }
-        } else if (touch.x > 0) {
-            pressedRight = true;
-            if (canMoveRight) {
-                moveRight();
-                canMoveLeft = true;
-            }
+        if (touch.x < worldBounds.pos.x) {
+            if (leftPointer != INVALID_POINTER) return false;
+            leftPointer = pointer;
+            moveLeft();
+        } else if (touch.x > worldBounds.pos.x) {
+            if (rightPointer != INVALID_POINTER) return false;
+            rightPointer = pointer;
+            moveRight();
         }
         return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer) {
-        if (touch.x < 0) {
-            pressedLeft = false;
-            if (pressedRight) {
-                if (canMoveRight)moveRight();
+        if (pointer == leftPointer) {
+            leftPointer = INVALID_POINTER;
+            if (rightPointer != INVALID_POINTER) {
+                moveRight();
             } else {
                 stop();
             }
-        } else if (touch.x > 0) {
-            pressedRight = false;
-            if (pressedLeft) {
-                if (canMoveLeft)moveLeft();
+        } else if (pointer == rightPointer) {
+            rightPointer = INVALID_POINTER;
+            if (leftPointer != INVALID_POINTER) {
+                moveLeft();
             } else {
                 stop();
             }
@@ -81,18 +95,12 @@ public class MainShip extends Sprite {
             case Input.Keys.A:
             case Input.Keys.LEFT:
                 pressedLeft = true;
-                if (canMoveLeft) {
-                    moveLeft();
-                    canMoveRight = true;
-                }
+                moveLeft();
                 break;
             case Input.Keys.D:
             case Input.Keys.RIGHT:
                 pressedRight = true;
-                if (canMoveRight) {
-                    moveRight();
-                    canMoveLeft = true;
-                }
+                moveRight();
                 break;
         }
         return false;
@@ -104,10 +112,7 @@ public class MainShip extends Sprite {
             case Input.Keys.LEFT:
                 pressedLeft = false;
                 if (pressedRight) {
-                    if (canMoveRight) {
-                        moveRight();
-                        canMoveLeft = true;
-                    }
+                    moveRight();
                 } else {
                     stop();
                 }
@@ -116,11 +121,7 @@ public class MainShip extends Sprite {
             case Input.Keys.RIGHT:
                 pressedRight = false;
                 if (pressedLeft) {
-                    if (canMoveLeft) {
-                        moveLeft();
-                        canMoveRight = true;
-
-                    }
+                    moveLeft();
                 } else {
                     stop();
                 }
@@ -142,24 +143,5 @@ public class MainShip extends Sprite {
 
     private void stop() {
         v.setZero();
-    }
-
-    @Override
-    public void update(float delta) {
-        pos.mulAdd(v, delta);
-        if (getRight() > worldBounds.getRight()) {
-            canMoveRight = false;
-            stop();
-        } else if (getLeft() < worldBounds.getLeft()) {
-            canMoveLeft = false;
-            stop();
-        }
-    }
-
-    private void shoot() {
-        Bullet bullet = bulletPool.obtain();
-        bullet.set(this, atlas.findRegion("bulletMainShip"), pos,
-                new Vector2(0, 0.5f), 0.01f, worldBounds, 1);
-        bullet.sound.play(0.3f);
     }
 }

@@ -14,11 +14,9 @@ public class Bullet extends Sprite {
     private Vector2 v = new Vector2();
     private int damage;
     private Object owner;
-    public Sound sound;
 
     public Bullet() {
         regions = new TextureRegion[1];
-        sound = Gdx.audio.newSound(Gdx.files.internal("Bullet.mp3"));
     }
 
     public void set(
