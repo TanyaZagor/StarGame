@@ -54,7 +54,9 @@ public class EnemyShip extends Ship {
         } else {
             this.pos.mulAdd(vf, delta);
         }
-
+        if (isOutside(worldBounds)) {
+            destroy();
+        }
     }
 
 }
