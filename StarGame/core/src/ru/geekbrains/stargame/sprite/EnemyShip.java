@@ -10,6 +10,8 @@ import ru.geekbrains.stargame.pool.BulletPool;
 
 public class EnemyShip extends Ship {
     private Vector2 v0 = new Vector2();
+    private Vector2 vf = new Vector2(0, -0.4f);
+
 
     public EnemyShip(BulletPool bulletPool, Rect worldBounds, Sound shootSound) {
         super(shootSound);
@@ -42,8 +44,17 @@ public class EnemyShip extends Ship {
 
     @Override
     public void update(float delta) {
-        super.update(delta);
-        this.pos.mulAdd(v, delta);
+        if (getTop() < worldBounds.getTop()) {
+            this.pos.mulAdd(v, delta);
+            reloadTimer += delta;
+            if (reloadTimer >= reloadInterval) {
+                shoot();
+                reloadTimer = 0f;
+            }
+        } else {
+            this.pos.mulAdd(vf, delta);
+        }
+
     }
 
 }
