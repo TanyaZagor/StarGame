@@ -163,4 +163,10 @@ public class MainShip extends Ship {
         hp = 0;
         super.destroy();
     }
+
+    public void newGame() {
+        this.hp = 100;
+        flushDestroy();
+        setLeft(0f - halfWidth);
+    }
 }

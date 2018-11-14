@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import ru.geekbrains.stargame.base.ActionListener;
 import ru.geekbrains.stargame.base.Base2DScreen;
 import ru.geekbrains.stargame.base.Sprite;
 import ru.geekbrains.stargame.math.Rect;
@@ -22,13 +23,14 @@ import ru.geekbrains.stargame.pool.EnemyPool;
 import ru.geekbrains.stargame.pool.ExplosionPool;
 import ru.geekbrains.stargame.sprite.Background;
 import ru.geekbrains.stargame.sprite.Bullet;
+import ru.geekbrains.stargame.sprite.ButtonNewGame;
 import ru.geekbrains.stargame.sprite.EnemyShip;
 import ru.geekbrains.stargame.sprite.MainShip;
 import ru.geekbrains.stargame.sprite.Star;
 import ru.geekbrains.stargame.utils.EnemiesEmmiter;
 
 
-public class GameScreen extends Base2DScreen {
+public class GameScreen extends Base2DScreen implements ActionListener {
 
     private static final int STAR_COUNT = 64;
 
@@ -41,6 +43,7 @@ public class GameScreen extends Base2DScreen {
     private Sprite gameOverSprite;
     private boolean gameOver;
 
+    private ButtonNewGame buttonNewGame;
 
     private MainShip mainShip;
     private BulletPool bulletPool;
@@ -84,6 +87,8 @@ public class GameScreen extends Base2DScreen {
 
         enemyPool = new EnemyPool(bulletPool, explosionPool, worldBounds, bulletSound);
         enemiesEmmiter = new EnemiesEmmiter(enemyPool, worldBounds, textureAtlas);
+
+        buttonNewGame = new ButtonNewGame(textureAtlas, this);
     }
 
     @Override
@@ -173,6 +178,7 @@ public class GameScreen extends Base2DScreen {
             enemyPool.drawActiveObjects(batch);
         } else {
             gameOverSprite.draw(batch);
+            buttonNewGame.draw(batch);
         }
         explosionPool.drawActiveObjects(batch);
         batch.end();
@@ -186,6 +192,7 @@ public class GameScreen extends Base2DScreen {
             stars[i].resize(worldBounds);
         }
         mainShip.resize(worldBounds);
+        buttonNewGame.resize(worldBounds);
     }
 
     @Override
@@ -200,12 +207,14 @@ public class GameScreen extends Base2DScreen {
     @Override
     public boolean touchDown(Vector2 touch, int pointer) {
         mainShip.touchDown(touch, pointer);
+        buttonNewGame.touchDown(touch, pointer);
         return super.touchDown(touch, pointer);
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer) {
         mainShip.touchUp(touch, pointer);
+        buttonNewGame.touchUp(touch, pointer);
         return super.touchUp(touch, pointer);
     }
 
@@ -219,5 +228,16 @@ public class GameScreen extends Base2DScreen {
     public boolean keyUp(int keycode) {
         mainShip.keyUp(keycode);
         return super.keyUp(keycode);
+    }
+
+    @Override
+    public void actionPerformed(Object src) {
+        if (src == buttonNewGame) {
+            gameOver = false;
+            bulletPool.freeAllActiveObjects();
+            enemyPool.freeAllActiveObjects();
+            mainShip.newGame();
+        }
+
     }
 }
