@@ -11,15 +11,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import ru.geekbrains.stargame.base.ActionListener;
 import ru.geekbrains.stargame.base.Base2DScreen;
 import ru.geekbrains.stargame.base.Font;
-import ru.geekbrains.stargame.base.Sprite;
 import ru.geekbrains.stargame.math.Rect;
-import ru.geekbrains.stargame.math.Rnd;
 import ru.geekbrains.stargame.pool.BulletPool;
 import ru.geekbrains.stargame.pool.EnemyPool;
 import ru.geekbrains.stargame.pool.ExplosionPool;
@@ -27,6 +23,7 @@ import ru.geekbrains.stargame.sprite.Background;
 import ru.geekbrains.stargame.sprite.Bullet;
 import ru.geekbrains.stargame.sprite.ButtonNewGame;
 import ru.geekbrains.stargame.sprite.EnemyShip;
+import ru.geekbrains.stargame.sprite.Live;
 import ru.geekbrains.stargame.sprite.MainShip;
 import ru.geekbrains.stargame.sprite.MsgGameOver;
 import ru.geekbrains.stargame.sprite.Star;
@@ -53,6 +50,11 @@ public class GameScreen extends Base2DScreen implements ActionListener {
 
     private TextureAtlas textureAtlas;
     private Star[] stars;
+
+    private Texture heartIcon;
+    private Live[] lives;
+    private int nLive = 5;
+
 
     private MsgGameOver msgGameOver;
 
@@ -92,12 +94,20 @@ public class GameScreen extends Base2DScreen implements ActionListener {
 
         bgTexture = new Texture("bg.png");
         background = new Background(new TextureRegion(bgTexture));
+
         textureAtlas = new TextureAtlas("mainAtlas.tpack");
         msgGameOver = new MsgGameOver(textureAtlas);
         stars = new Star[STAR_COUNT];
         for (int i = 0; i < stars.length; i++) {
             stars[i] = new Star(textureAtlas);
         }
+
+        heartIcon = new Texture("Heart-icon.png");
+        lives = new Live[5];
+        for (int i = 0; i < lives.length; i++) {
+            lives[i] = new Live(new TextureRegion(heartIcon), i);
+        }
+
         explosionPool = new ExplosionPool(textureAtlas, explosionSound);
         bulletPool = new BulletPool();
         mainShip = new MainShip(textureAtlas, bulletPool, explosionPool, laserSound, worldBounds);
@@ -130,6 +140,8 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         }
         explosionPool.updateActiveObjects(delta);
 
+
+
         switch (state) {
             case PLAYING:
                 mainShip.update(delta);
@@ -145,6 +157,9 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         }
     }
 
+    public void checkLives(){
+        nLive = mainShip.getHp() / 20 + 1;
+    }
     public void checkCollisions() {
         List<EnemyShip> enemyList = enemyPool.getActiveObjects();
         for (EnemyShip enemy : enemyList) {
@@ -167,6 +182,7 @@ public class GameScreen extends Base2DScreen implements ActionListener {
             if (mainShip.isBulletCollision(bullet)) {
                 bullet.destroy();
                 mainShip.damage(bullet.getDamage());
+                checkLives();
                 if (mainShip.isDestroyed()) {
                     state = State.GAME_OVER;
                 }
@@ -207,7 +223,6 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         for (Star star : stars) {
             star.draw(batch);
         }
-        explosionPool.drawActiveObjects(batch);
         if (state == State.GAME_OVER) {
             msgGameOver.draw(batch);
             buttonNewGame.draw(batch);
@@ -225,7 +240,9 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         sbHP.setLength(0);
         sbLevel.setLength(0);
         font.draw(batch, sbFrags.append(FRAGS).append(frags), worldBounds.getLeft(), worldBounds.getTop());
-        font.draw(batch, sbHP.append(HP).append(mainShip.getHp()), worldBounds.pos.x, worldBounds.getTop(), Align.center);
+        for (int i = 0; i < nLive; i++) {
+            lives[i].draw(batch);
+        }
         font.draw(batch, sbLevel.append(LEVEL).append(enemiesEmmiter.getLevel()), worldBounds.getRight(), worldBounds.getTop(), Align.right);
     }
 
@@ -235,6 +252,9 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         background.resize(worldBounds);
         for (Star star : stars) {
             star.resize(worldBounds);
+        }
+        for (Live life : lives) {
+            life.resize(worldBounds);
         }
         mainShip.resize(worldBounds);
         buttonNewGame.resize(worldBounds);
@@ -247,6 +267,7 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         music.dispose();
         bulletSound.dispose();
         font.dispose();
+        heartIcon.dispose();
         super.dispose();
     }
 
@@ -294,6 +315,7 @@ public class GameScreen extends Base2DScreen implements ActionListener {
         state = State.PLAYING;
         enemiesEmmiter.setLevel(1);
         frags = 0;
+        nLive = 5;
         mainShip.startNewGame();
         bulletPool.freeAllActiveObjects();
         enemyPool.freeAllActiveObjects();
